@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="#0b4f7a" name="theme-color"/>
-<title>Manual Interativo CFW500 — Iniciantes • V5 Revisada</title>
+<title>Manual Interativo CFW500 — Iniciantes • V6 • HMI em rpm</title>
 <style>
 :root{
   --bg:#f4f7fb; --surface:#fff; --surface2:#edf4f8; --ink:#14212b; --muted:#5f6f7a;
@@ -221,6 +221,7 @@ th{background:#eaf4f8;color:#244f66;font-weight:800}
   .check{font-size:14px}
 }
 
+.rpm-panel{margin-top:20px;background:#f7fcff}.rpm-panel .steps{grid-template-columns:repeat(2,minmax(0,1fr))}.rpm-panel button{min-height:44px}.screen .big{overflow-wrap:anywhere;font-size:clamp(23px,4vw,30px)}.key{font-size:12px;padding:5px}.rpm-panel [hidden]{display:none!important}@media(max-width:720px){.rpm-panel .steps{grid-template-columns:1fr}.rpm-panel{padding:12px}}
 </style>
 </head>
 <body>
@@ -253,7 +254,7 @@ th{background:#eaf4f8;color:#244f66;font-weight:800}
 <div class="badges">
 <span class="badge">Nível: iniciante</span><span class="badge">Modo V/f</span><span class="badge">HMI local</span>
 <span class="badge">Entradas digitais</span><span class="badge">Diagnóstico</span><span class="badge">Menus da HMI</span><span class="badge">Funciona offline</span>
-<span class="badge">V5 • Revisão responsiva</span></div>
+<span class="badge">V6 • HMI em rpm</span></div>
 </div>
 <div class="callout" style="margin:0 0 20px"><strong>Compatibilidade de versão:</strong> os parâmetros centrais deste manual são compatíveis com a família CFW500, mas alguns valores/opções podem variar conforme firmware e módulo plug-in. Antes da aula, consulte <strong>P0023/P0024</strong> para identificar a versão de software e confirme a referência de parâmetros correspondente ao equipamento.</div>
 <section class="lesson" data-title="1. Antes de começar" id="l1">
@@ -286,23 +287,54 @@ th{background:#eaf4f8;color:#244f66;font-weight:800}
 <div>
 <div class="hmi">
 <div class="screen">
-<div class="small"><span id="hmiMode">LOC</span><span>Hz</span></div>
+<div class="small"><span id="hmiMode">LOC</span><span id="hmiUnit">Hz</span></div>
 <div class="big" id="hmiDisplay">0.0</div>
 <div class="small"><span id="hmiStatus">READY</span><span id="hmiParam">P0121</span></div>
 </div>
 <div class="keys">
-<button class="key blue" onclick="hmiMenu()">MENU</button>
+<button class="key blue" onclick="hmiMenu()">ENTER / MENU</button>
 <button class="key" onclick="hmiUp()">▲</button>
 <button class="key" onclick="hmiDown()">▼</button>
 <button class="key" onclick="hmiLoc()">LOC/REM</button>
 <button class="key green" onclick="hmiRun()">RUN</button>
 <button class="key red" onclick="hmiStop()">STOP</button>
 <button class="key" onclick="hmiDir()">↔ GIRO</button>
-<button class="key" onclick="hmiEsc()">ESC</button>
+<button class="key" onclick="hmiEsc()">BACK / ESC</button>
 </div>
 </div>
-<div class="callout ok"><strong>Simulador didático:</strong> use RUN/STOP e ▲/▼. Ele não reproduz toda a firmware do equipamento; serve para fixar a lógica de operação.</div>
+<div id="hmiEditBox" hidden><label for="hmiEditValue">Valor em edição (ENTER confirma; ESC cancela)</label><input id="hmiEditValue" type="number" step="1"/><button class="btn" type="button" id="hmiConfirm">Confirmar valor</button></div><div class="callout ok"><strong>Simulador didático:</strong> use RUN/STOP e ▲/▼. Ele não reproduz toda a firmware do equipamento; serve para fixar a lógica de operação.</div>
 </div>
+</div>
+
+<div class="card rpm-panel" id="rpmPanel">
+<div class="kicker">NOVO • PRÁTICA DE DISPLAY</div><h3>Mostrar velocidade em rpm</h3>
+<p>Configure os campos e aplique ao simulador acima, ou pratique usando ENTER/MENU, ▲/▼ e BACK/ESC. As alterações são apenas didáticas; não há conexão com um inversor real.</p>
+<div class="steps">
+<div class="step">Pressione <strong>ENTER/MENU</strong>.</div>
+<div class="step">Use ▲/▼ até <strong>HMI</strong> e pressione ENTER/MENU.</div>
+<div class="step">Escolha <strong>P0208</strong>, entre, ajuste para <strong>1800</strong> e confirme.</div>
+<div class="step">Em <strong>P0209</strong>, salve <strong>3 = rpm</strong>.</div>
+<div class="step">Em <strong>P0210</strong>, salve <strong>0</strong>.</div>
+<div class="step">Em <strong>P0205</strong>, salve <strong>2 → P0002</strong>.</div>
+<div class="step">Pressione <strong>BACK/ESC</strong> até voltar à monitoração.</div>
+</div>
+<form id="rpmForm" style="margin-top:20px">
+<div class="formgrid">
+<label>P0208 • Escala<input id="rpmScale" type="number" min="1" max="65535" step="1" required value="600"/></label>
+<label>P0209 • Unidade<select id="rpmUnit"></select></label>
+<label>P0210 • Casas decimais<select id="rpmDecimals"><option value="0">0 • Inteiro</option><option value="1" selected>1 • Uma casa</option><option value="2">2 • Duas casas</option><option value="3">3 • Três casas</option></select></label>
+<label>P0205 • Display principal<select id="rpmMonitor"><option value="1">1 • P0001 / referência</option><option value="2" selected>2 • P0002 / saída</option><option value="5">5 • P0005 / frequência Hz</option></select></label>
+<label>P0403 • Frequência nominal (Hz)<select id="rpmNominal"><option value="60">60 Hz</option><option value="50">50 Hz</option></select></label>
+<label>Referência de teste (0–60 Hz)<input id="rpmTestHz" type="number" min="0" max="60" step="0.1" value="0" required/></label>
+</div>
+<div class="toolbar"><button type="submit" class="btn primary">Aplicar campos à simulação</button><button type="button" class="btn" id="rpmPreset">Aplicar exemplo 1800 rpm</button><button type="button" class="btn" id="hzPreset">Aplicar exemplo 60,0 Hz</button><button type="button" class="btn" id="rpmPractice">Praticar no teclado ↑</button></div>
+</form>
+
+<p id="hmiFeedback" class="callout" role="status" aria-live="polite"></p>
+<div id="rpmResult" class="output"></div>
+<p class="small-note">Modelo simplificado em V/f, sem rampas ou escorregamento: indicação = frequência ÷ P0403 × P0208 ÷ 10<sup>P0210</sup>. A escala em rpm não mede a rotação do eixo. RUN/STOP, LOC/REM e GIRO permanecem disponíveis no treino.</p>
+<p class="small-note">Configuração salva neste navegador, quando o armazenamento estiver disponível. Abrir outro arquivo ou outro navegador pode não recuperar os dados anteriores.</p>
+<p class="small-note"><a href="https://static.weg.net/medias/downloadcenter/hee/h0b/WEG-cfw500-manual-de-programacao-10001469555-1.8x-manual-portugues-br.pdf" target="_blank" rel="noopener">WEG • Manual CFW500 V1.8X, seção 5.3</a>. Confira a versão do equipamento.</p>
 </div>
 <label class="check"><input class="progressCheck" type="checkbox"/> Consigo entrar, alterar e sair de um parâmetro pela HMI.</label>
 </section>
@@ -968,12 +1000,69 @@ function goNext(){
  const active=document.querySelector('.navbtn.active');let idx=active?[...nav.children].indexOf(active):0;idx=Math.min(idx+1,lessons.length-1);lessons[idx].scrollIntoView({behavior:'smooth'});
 }
 
-let hmi={hz:0,running:false,loc:true,dir:1,menu:false};
-function renderHmi(){document.getElementById('hmiDisplay').textContent=hmi.hz.toFixed(1);document.getElementById('hmiStatus').textContent=hmi.running?'RUN':'READY';document.getElementById('hmiMode').textContent=hmi.loc?'LOC':'REM';document.getElementById('hmiParam').textContent=hmi.menu?'PARAM':'P0121'}
-function hmiUp(){hmi.hz=Math.min(60,hmi.hz+5);renderHmi()} function hmiDown(){hmi.hz=Math.max(0,hmi.hz-5);renderHmi()}
+// V6: isolated display configuration; existing course storage keys are retained.
+const rpmUnits=['—','V','A','rpm','s','ms','N','m','Nm','mA','%','°C','CV','Hz','HP','h','W','kW','kWh','H'];
+const rpmDefaults={P0208:600,P0209:13,P0210:1,P0205:2,P0403:60};
+let rpmConfig={...rpmDefaults};
+function rpmValid(c){return c&&Number.isInteger(c.P0208)&&c.P0208>=1&&c.P0208<=65535&&Number.isInteger(c.P0209)&&c.P0209>=0&&c.P0209<=19&&Number.isInteger(c.P0210)&&c.P0210>=0&&c.P0210<=3&&[1,2,5].includes(c.P0205)&&[50,60].includes(c.P0403)}
+try{const c=JSON.parse(safeStorage.get('cfw500_hmi_display_v6'));if(rpmValid(c))rpmConfig={...c}}catch(e){}
+let hmi={hz:0,running:false,loc:true,dir:1,menu:false,level:0,group:0,index:0,draft:0};
+const hmiGroups=['PARAM','HMI'];
+const hmiParams=['P0205','P0208','P0209','P0210'];
+const rpmFields={P0208:'rpmScale',P0209:'rpmUnit',P0210:'rpmDecimals',P0205:'rpmMonitor',P0403:'rpmNominal'};
+rpmUnits.forEach((unit,i)=>{const o=document.createElement('option');o.value=i;o.textContent=i+' • '+unit;document.getElementById('rpmUnit').appendChild(o)});
+function rpmSync(){for(const [p,id] of Object.entries(rpmFields))document.getElementById(id).value=rpmConfig[p]}
+function rpmPersist(){safeStorage.set('cfw500_hmi_display_v6',JSON.stringify(rpmConfig));rpmSync();if(generated)generateParams()}
+function rpmSay(t){document.getElementById('hmiFeedback').textContent=t}
+function rpmValue(hz){return hz/rpmConfig.P0403*rpmConfig.P0208/(10**rpmConfig.P0210)}
+function renderHmi(){
+ const out=hmi.running?hmi.hz:0, p=hmiParams[hmi.index];
+ let val,unit='',param='',hint='';
+ if(hmi.level===0){
+  const f=rpmConfig.P0205===1?hmi.hz:out;
+  val=rpmConfig.P0205===5?out.toFixed(1):rpmValue(f).toFixed(rpmConfig.P0210);
+  unit=rpmConfig.P0205===5?'Hz':rpmUnits[rpmConfig.P0209];param='P'+String(rpmConfig.P0205).padStart(4,'0');
+  hint='Monitoração • ▲/▼ ajustam a referência em 5 Hz. ENTER abre os grupos.';
+ }else if(hmi.level===1){val=hmiGroups[hmi.group];param='GRUPO';hint='▲/▼ escolhem PARAM ou HMI. ENTER abre os parâmetros do exercício.'}
+ else if(hmi.level===2){val=p;param='VALOR '+rpmConfig[p];hint='▲/▼ escolhem o parâmetro; ENTER inicia a edição.'}
+ else {val=String(hmi.draft);param=p+' • EDITAR';hint='▲/▼ alteram o valor. Também pode digitar abaixo. ENTER salva; ESC descarta.'}
+ document.getElementById('hmiDisplay').textContent=val;
+ document.getElementById('hmiUnit').textContent=unit;
+ document.getElementById('hmiStatus').textContent=(hmi.running?'RUN ':'READY ')+(hmi.dir>0?'→':'←');
+ document.getElementById('hmiMode').textContent=hmi.loc?'LOC':'REM';
+ document.getElementById('hmiParam').textContent=param;
+ document.getElementById('hmiEditBox').hidden=hmi.level!==3;
+ if(hmi.level===3)document.getElementById('hmiEditValue').value=hmi.draft;
+ rpmSay(hint);
+ document.getElementById('rpmResult').textContent=`Referência de teste: ${hmi.hz.toFixed(1)} Hz | Saída simulada: ${out.toFixed(1)} Hz
+Indicação escalada de saída: ${out.toFixed(1)} ÷ ${rpmConfig.P0403} × ${rpmConfig.P0208} ÷ 10^${rpmConfig.P0210} = ${rpmValue(out).toFixed(rpmConfig.P0210)} ${rpmUnits[rpmConfig.P0209]}
+P0205=${rpmConfig.P0205} | P0208=${rpmConfig.P0208} | P0209=${rpmConfig.P0209} | P0210=${rpmConfig.P0210}
+${rpmConfig.P0208===1800&&rpmConfig.P0209===3&&rpmConfig.P0210===0&&rpmConfig.P0205===2?'✓ Configuração da imagem concluída. Pressione RUN para observar a saída.':'Configure os quatro parâmetros para reproduzir o exemplo da imagem.'}`;
+}
+function hmiMove(d){
+ if(hmi.level===0){hmi.hz=Math.max(0,Math.min(60,hmi.hz+5*d));document.getElementById('rpmTestHz').value=hmi.hz}
+ else if(hmi.level===1)hmi.group=(hmi.group+d+2)%2;
+ else if(hmi.level===2)hmi.index=(hmi.index+d+4)%4;
+ else {const p=hmiParams[hmi.index];if(!Number.isFinite(hmi.draft))hmi.draft=rpmConfig[p];if(p==='P0205'){const opts=[1,2,5];hmi.draft=opts[(opts.indexOf(hmi.draft)+d+3)%3]}else{const max=p==='P0208'?65535:p==='P0209'?19:3;hmi.draft=Math.max(p==='P0208'?1:0,Math.min(max,hmi.draft+d))}}
+ renderHmi();
+}
+function hmiUp(){hmiMove(1)} function hmiDown(){hmiMove(-1)}
 function hmiRun(){hmi.running=true;renderHmi()} function hmiStop(){hmi.running=false;renderHmi()}
-function hmiLoc(){hmi.loc=!hmi.loc;renderHmi()} function hmiDir(){hmi.dir*=-1;document.getElementById('hmiStatus').textContent=(hmi.running?'RUN ':'READY ')+(hmi.dir>0?'→':'←')}
-function hmiMenu(){hmi.menu=true;renderHmi()} function hmiEsc(){hmi.menu=false;renderHmi()}
+function hmiLoc(){hmi.loc=!hmi.loc;renderHmi()} function hmiDir(){hmi.dir*=-1;renderHmi()}
+function hmiMenu(){
+ if(hmi.level===3){const input=document.getElementById('hmiEditValue');const draft=input.value===''?NaN:Number(input.value);const next={...rpmConfig,[hmiParams[hmi.index]]:draft};if(!rpmValid(next)){rpmSay('Valor inválido. P0205: 1, 2 ou 5 neste treino; P0208: inteiro de 1 a 65535; P0209: 0 a 19; P0210: 0 a 3.');return}rpmConfig=next;rpmPersist();hmi.level=2;renderHmi();rpmSay('Valor confirmado. BACK/ESC retorna; ▲/▼ escolhem outro parâmetro.');return}
+ hmi.level++;if(hmi.level===3)hmi.draft=rpmConfig[hmiParams[hmi.index]];renderHmi();
+}
+function hmiEsc(){hmi.level=Math.max(0,hmi.level-1);renderHmi()}
+document.getElementById('hmiEditValue').addEventListener('input',e=>{hmi.draft=e.target.value===''?NaN:Number(e.target.value)});
+document.getElementById('hmiEditValue').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();hmiMenu()}if(e.key==='Escape')hmiEsc()});
+document.getElementById('hmiConfirm').onclick=hmiMenu;
+document.getElementById('rpmForm').onsubmit=e=>{e.preventDefault();const next={};for(const [p,id] of Object.entries(rpmFields))next[p]=Number(document.getElementById(id).value);const hz=Number(document.getElementById('rpmTestHz').value);if(!rpmValid(next)||!Number.isFinite(hz)||hz<0||hz>60){rpmSay('Revise os campos: valores fora da faixa.');return}rpmConfig=next;hmi.hz=hz;hmi.level=0;rpmPersist();renderHmi();rpmSay('Campos aplicados. Pressione RUN no simulador para visualizar a saída.');};
+function rpmPreset(rpm){rpmConfig={P0208:rpm?1800:600,P0209:rpm?3:13,P0210:rpm?0:1,P0205:2,P0403:60};hmi.level=0;rpmPersist();renderHmi();rpmSay('Exemplo aplicado com P0403 = 60 Hz. A frequência de teste foi mantida; pressione RUN.');}
+document.getElementById('rpmPreset').onclick=()=>rpmPreset(true);
+document.getElementById('hzPreset').onclick=()=>rpmPreset(false);
+document.getElementById('rpmPractice').onclick=()=>{hmi.level=0;renderHmi();document.querySelector('.hmi').scrollIntoView({behavior:'smooth',block:'center'});document.querySelector('.hmi .key').focus({preventScroll:true})};
+rpmSync();renderHmi();
 
 let generated='';
 function v(id){return document.getElementById(id).value}
@@ -986,6 +1075,14 @@ P0202 = 0      → Controle V/f
 P0401 = ${v('mCurrent')} A   → Corrente nominal do motor
 P0402 = ${v('mRpm')} rpm → Rotação nominal do motor
 P0403 = ${v('mHz')} Hz   → Frequência nominal do motor
+
+DISPLAY HMI — CONFIGURAÇÃO DA SIMULAÇÃO
+P0205 = ${rpmConfig.P0205} → Parâmetro do display principal
+P0208 = ${rpmConfig.P0208} → Escala da referência
+P0209 = ${rpmConfig.P0209} → Unidade ${rpmUnits[rpmConfig.P0209]}
+P0210 = ${rpmConfig.P0210} → Casas decimais
+P0403 usado na simulação = ${rpmConfig.P0403} Hz
+${Number(v('mHz'))!==rpmConfig.P0403?'ATENÇÃO: P0403 da ficha difere do usado na simulação. Revise a escala.':''}
 
 RAMPAS E LIMITES
 P0100 = ${v('mAcc')} s   → Tempo de aceleração
