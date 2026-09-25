@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="#0b4f7a" name="theme-color"/>
-<title>Manual Interativo CFW500 — Iniciantes • V5 Revisada</title>
+<title>Manual Interativo CFW500 — Iniciantes • V5.1 • Primeira utilização</title>
 <style>
 :root{
   --bg:#f4f7fb; --surface:#fff; --surface2:#edf4f8; --ink:#14212b; --muted:#5f6f7a;
@@ -253,7 +253,7 @@ th{background:#eaf4f8;color:#244f66;font-weight:800}
 <div class="badges">
 <span class="badge">Nível: iniciante</span><span class="badge">Modo V/f</span><span class="badge">HMI local</span>
 <span class="badge">Entradas digitais</span><span class="badge">Diagnóstico</span><span class="badge">Menus da HMI</span><span class="badge">Funciona offline</span>
-<span class="badge">V5 • Revisão responsiva</span></div>
+<span class="badge">V5.1 • Roteiro de primeira utilização</span></div>
 </div>
 <div class="callout" style="margin:0 0 20px"><strong>Compatibilidade de versão:</strong> os parâmetros centrais deste manual são compatíveis com a família CFW500, mas alguns valores/opções podem variar conforme firmware e módulo plug-in. Antes da aula, consulte <strong>P0023/P0024</strong> para identificar a versão de software e confirme a referência de parâmetros correspondente ao equipamento.</div>
 <section class="lesson" data-title="1. Antes de começar" id="l1">
@@ -521,8 +521,41 @@ th{background:#eaf4f8;color:#244f66;font-weight:800}
   </div>
 <label class="check"><input class="progressCheck" type="checkbox"/> Sei explicar a função de PARAM, READ, MODIF, BASIC, MOTOR, I/O, NET, HMI, SPLC e STARTUP.</label>
 </section>
-<section class="lesson" data-title="3. Primeiro start-up" id="l3">
+<section class="lesson" data-title="3. Padrão de fábrica e start-up" id="l3">
 <div class="kicker">MÓDULO 3</div><h2>Primeiro start-up orientado</h2>
+<div class="card" id="primeiro-reset" style="border:2px solid var(--blue);margin:18px 0">
+<div class="kicker">COMECE AQUI • ANTES DO START-UP</div>
+<h3>Primeira utilização: carregar o padrão de fábrica</h3>
+<p><strong>Objetivo da prática:</strong> iniciar o exercício a partir de uma configuração conhecida. Faça esta etapa na bancada didática somente quando o docente solicitar. Ela não é obrigatória toda vez que o inversor é ligado.</p>
+<div class="callout danger"><strong>Antes de confirmar:</strong> a restauração substitui ajustes da aplicação. Registre a configuração anterior com o docente. Mantenha o motor parado, o inversor desabilitado e os comandos externos de marcha inativos. STOP na HMI pode não comandar a parada quando a fonte de comando é externa. Não altere a fiação com a bancada energizada.</div>
+<h4>A. Preparar e verificar o acesso</h4>
+<ol>
+<li>Peça ao docente a liberação da bancada e confirme que não existe comando de partida ativo.</li>
+<li>Identifique com o docente o padrão do exercício: <strong>60 Hz</strong> ou <strong>50 Hz</strong>.</li>
+<li>Com a bancada liberada e a HMI energizada, pressione <strong>ENTER/MENU</strong>, selecione <strong>PARAM</strong> com ▲/▼ e pressione <strong>ENTER/MENU</strong>.</li>
+<li><strong>Se a edição estiver protegida:</strong> entre em <strong>P0000</strong>, informe a senha fornecida pelo docente e confirme com ENTER/MENU. A senha depende da configuração em P0200; <strong>não presuma que seja 5</strong>. Se a proteção estiver inativa, essa etapa pode não ser necessária e P0000 pode não estar acessível.</li>
+</ol>
+<h4>B. Restaurar pela HMI — exemplo de 60 Hz</h4>
+<div class="steps">
+<div class="step"><strong>Localize P0204.</strong><br/>No grupo PARAM, use ▲/▼ até aparecer <span class="param">P0204</span> — Carrega/Salva parâmetros.</div>
+<div class="step"><strong>Entre no valor.</strong><br/>Pressione ENTER/MENU uma vez para editar o conteúdo de P0204.</div>
+<div class="step"><strong>Selecione 5.</strong><br/>Use ▲/▼ até o valor <strong>5 = Carrega WEG 60 Hz</strong>. Para um exercício de 50 Hz autorizado pelo docente, a opção é <strong>6 = Carrega WEG 50 Hz</strong>.</div>
+<div class="step"><strong>Confira antes de salvar.</strong><br/>Mostre ao docente o parâmetro P0204 e a opção escolhida. Se entrou por engano, use BACK/ESC antes de confirmar.</div>
+<div class="step"><strong>Confirme.</strong><br/>Pressione ENTER/MENU para executar o carregamento. Aguarde a conclusão sem interromper a alimentação.</div>
+<div class="step"><strong>Retorne à monitoração.</strong><br/>Use BACK/ESC até sair dos menus. Não pressione RUN ainda.</div>
+</div>
+<div class="callout"><strong>Roteiro curto:</strong> ENTER/MENU → PARAM → P0204 → ENTER/MENU → 5 → ENTER/MENU → aguardar → BACK/ESC.</div>
+<h4>C. Depois de restaurar</h4>
+<p>Prossiga no <strong>start-up orientado abaixo</strong>. Confira os dados da placa do motor, rampas, limites de frequência e fontes de referência e de Gira/Para. O padrão de fábrica não substitui a parametrização específica da bancada. A primeira partida deve ser liberada e acompanhada pelo docente.</p>
+<details><summary><strong>Não consegui alterar o parâmetro. O que conferir?</strong></summary>
+<ul><li>Confirme que está em <strong>PARAM</strong> e entrou no valor com ENTER/MENU.</li><li>Peça ao docente para verificar se o inversor está desabilitado e se há proteção por senha.</li><li>Se o comportamento for diferente, anote a indicação da HMI e confira o manual da versão do equipamento com o docente.</li></ul>
+</details>
+<div class="callout warn"><strong>Sobre o simulador desta V5:</strong> o teclado do Módulo 2 demonstra comandos básicos. Ele não executa P0204 nem a restauração de fábrica. Este roteiro orienta a prática na HMI real.</div>
+<p class="small-note"><strong>Registro do aluno no caderno:</strong> padrão escolhido: ____ Hz · valor utilizado em P0204: ____ · ajustes que preciso conferir antes de RUN: ____________________.</p>
+<p class="small-note">Referências: WEG, Manual de Programação CFW500, seções 5.3 (acesso/senha) e 5.4 (backup). <a href="https://static.weg.net/medias/downloadcenter/hee/h0b/WEG-cfw500-manual-de-programacao-10001469555-1.8x-manual-portugues-br.pdf" target="_blank" rel="noopener">Consultar manual V1.8X</a>. Use a documentação correspondente ao firmware da bancada.</p>
+</div>
+<h3>Agora: start-up com os dados do motor</h3>
+
 <p>Para uma primeira configuração V/f, a referência rápida da WEG indica a rotina STARTUP com os parâmetros abaixo.</p>
 <div class="steps">
 <div class="step">Na HMI, acesse o grupo <strong>STARTUP</strong>.</div>
